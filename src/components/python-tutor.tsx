@@ -27,7 +27,7 @@ function SubmitButton() {
 }
 
 export default function PythonTutor() {
-  // Use useActionState instead of useFormState
+  // Use useActionState instead of useFormState from react
   const [state, formAction] = useActionState(handleGenerateCode, initialState);
   const formRef = React.useRef<HTMLFormElement>(null);
   const [generatedCode, setGeneratedCode] = React.useState<string | undefined>(undefined);
@@ -36,21 +36,21 @@ export default function PythonTutor() {
   React.useEffect(() => {
     if (state.code) {
         setGeneratedCode(state.code);
-        // Clear message on success if needed, or display success toast
+        // Optionally clear message or show success toast
         // toast({ title: "Success", description: state.message });
     } else if (state.message && state.message !== 'Code generated successfully!' && !state.errors) {
-      // Show error toast only if there's a message, it's not the success message, and there are no validation errors
+      // Show error toast only if there's a message, it's not the success message, and no validation errors
       toast({
           variant: "destructive",
           title: "Error",
           description: state.message,
         });
     }
-    // Optionally clear form on success or keep it
+    // Optionally clear form on success
     // if (state.message === 'Code generated successfully!') {
     //   formRef.current?.reset();
     // }
-  }, [state, toast]); // Add toast to dependency array
+  }, [state, toast]); // Add toast dependency
 
   const handleCopyCode = () => {
     if (generatedCode) {
@@ -70,11 +70,12 @@ export default function PythonTutor() {
     <Card className="w-full shadow-lg rounded-lg overflow-hidden border-border bg-card">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-card-foreground">Generate Python Code</CardTitle>
-        <CardDescription className="text-muted-foreground">
+        <CardDescription className="text-muted-foreground pt-1"> {/* Added pt-1 for slight separation */}
           Enter a description of the Python functionality you need, and the AI will generate the code for you.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      {/* Added explicit padding p-6 to ensure content doesn't overlap header */}
+      <CardContent className="p-6 space-y-6">
         <form action={formAction} ref={formRef} className="space-y-4">
           <div>
             <Label htmlFor="prompt" className="block text-sm font-medium mb-1 text-foreground">
@@ -95,7 +96,7 @@ export default function PythonTutor() {
               </p>
             )}
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-2"> {/* Added pt-2 for spacing */}
             <SubmitButton />
           </div>
         </form>
@@ -112,7 +113,7 @@ export default function PythonTutor() {
         )}
 
         {generatedCode && (
-          <div className="mt-6 space-y-2">
+          <div className="space-y-2"> {/* Removed mt-6 as CardContent already has space-y-6 */}
             <Label className="block text-sm font-medium text-foreground">Generated Code</Label>
             <div className="bg-muted/50 border border-border rounded-md p-4 shadow-inner relative group">
               <pre className="text-sm whitespace-pre-wrap overflow-x-auto font-mono text-foreground">
@@ -128,7 +129,6 @@ export default function PythonTutor() {
                   <Copy className="h-4 w-4 text-muted-foreground" />
               </Button>
             </div>
-
           </div>
         )}
       </CardContent>
