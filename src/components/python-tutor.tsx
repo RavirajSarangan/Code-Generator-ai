@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Loader2 } from 'lucide-react';
+import { Terminal, Loader2, Copy } from 'lucide-react';
 import { handleGenerateCode, type FormState } from '@/app/actions';
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const initialState: FormState = {
   message: '',
@@ -28,21 +29,45 @@ export default function PythonTutor() {
   const [state, formAction] = useFormState(handleGenerateCode, initialState);
   const formRef = React.useRef<HTMLFormElement>(null);
   const [generatedCode, setGeneratedCode] = React.useState<string | undefined>(undefined);
+  const { toast } = useToast(); // Initialize useToast
 
   React.useEffect(() => {
     if (state.code) {
         setGeneratedCode(state.code);
+        // Clear message on success if needed, or display success toast
+        // toast({ title: "Success", description: state.message });
+    } else if (state.message && state.message !== 'Code generated successfully!' && !state.errors) {
+      // Show error toast only if there's a message, it's not the success message, and there are no validation errors
+      toast({
+          variant: "destructive",
+          title: "Error",
+          description: state.message,
+        });
     }
     // Optionally clear form on success or keep it
     // if (state.message === 'Code generated successfully!') {
     //   formRef.current?.reset();
     // }
-  }, [state]);
+  }, [state, toast]); // Add toast to dependency array
+
+  const handleCopyCode = () => {
+    if (generatedCode) {
+      navigator.clipboard.writeText(generatedCode).then(() => {
+        toast({ description: "Code copied to clipboard!" });
+      }).catch(err => {
+        console.error('Failed to copy code: ', err);
+        toast({ variant: "destructive", description: "Failed to copy code." });
+      });
+    }
+  };
+
+  // Determine if there was a failure message (excluding validation errors)
+  const hasFailureMessage = state.message && state.message.toLowerCase().includes('failed') && !state.errors;
 
   return (
-    <Card className="w-full shadow-lg rounded-lg overflow-hidden">
+    <Card className="w-full shadow-lg rounded-lg overflow-hidden border-border bg-card">
       <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-primary">Generate Python Code</CardTitle>
+        <CardTitle className="text-2xl font-semibold text-card-foreground">Generate Python Code</CardTitle>
         <CardDescription className="text-muted-foreground">
           Enter a description of the Python functionality you need, and the AI will generate the code for you.
         </CardDescription>
@@ -58,8 +83,9 @@ export default function PythonTutor() {
               name="prompt"
               placeholder="e.g., 'Create a Python function that takes a list of numbers and returns the sum.'"
               required
-              className="min-h-[100px] bg-secondary/50 border-input focus:border-accent focus:ring-accent"
+              className="min-h-[100px] bg-input border-input focus:border-ring focus:ring-1 focus:ring-ring text-foreground"
               aria-describedby="prompt-error"
+              aria-invalid={!!state.errors?.prompt}
             />
             {state.errors?.prompt && (
               <p id="prompt-error" className="text-sm text-destructive mt-1">
@@ -72,32 +98,35 @@ export default function PythonTutor() {
           </div>
         </form>
 
-        {state.message && !state.code && state.message !== 'Validation failed.' && (
-          <Alert variant={state.message.includes('Failed') ? "destructive" : "default"} className="mt-4">
+        {/* Display failure alert only for actual generation failures */}
+        {hasFailureMessage && (
+          <Alert variant="destructive" className="mt-4">
             <Terminal className="h-4 w-4" />
-            <AlertTitle>{state.message.includes('Failed') ? 'Error' : 'Status'}</AlertTitle>
+            <AlertTitle>Generation Failed</AlertTitle>
             <AlertDescription>
-              {state.message}
+              {state.message} Please check your API key or try again later.
             </AlertDescription>
           </Alert>
         )}
 
         {generatedCode && (
-          <div className="mt-6">
-            <Label className="block text-sm font-medium mb-2 text-foreground">Generated Code</Label>
-            <div className="bg-primary/5 border border-border rounded-md p-4 shadow-inner">
+          <div className="mt-6 space-y-2">
+            <Label className="block text-sm font-medium text-foreground">Generated Code</Label>
+            <div className="bg-muted/50 border border-border rounded-md p-4 shadow-inner relative group">
               <pre className="text-sm whitespace-pre-wrap overflow-x-auto font-mono text-foreground">
                 <code>{generatedCode}</code>
               </pre>
-            </div>
-             <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigator.clipboard.writeText(generatedCode)}
-                className="mt-2"
-              >
-                Copy Code
+               <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCopyCode}
+                  className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 hover:bg-background/75"
+                  aria-label="Copy code"
+                >
+                  <Copy className="h-4 w-4 text-muted-foreground" />
               </Button>
+            </div>
+
           </div>
         )}
       </CardContent>
