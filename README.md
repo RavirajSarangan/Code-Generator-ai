@@ -1,9 +1,3 @@
-Got it — you want to update your `README.md` for your **Code Generator AI** project (not the **Food Recipe Generator AI**) based on the content and style you provided.
-
-Here’s the **rewritten README** specifically tailored for your **Code Generator AI** project:
-
----
-
 # 🌟 **Code Generator AI** 🌟
 
 ## Overview 🖥️🧠
