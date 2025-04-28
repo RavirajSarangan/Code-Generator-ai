@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react'; // Keep useActionState from react
+import { useFormStatus } from 'react-dom'; // Import useFormStatus from react-dom
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +27,8 @@ function SubmitButton() {
 }
 
 export default function PythonTutor() {
-  const [state, formAction] = useFormState(handleGenerateCode, initialState);
+  // Use useActionState instead of useFormState
+  const [state, formAction] = useActionState(handleGenerateCode, initialState);
   const formRef = React.useRef<HTMLFormElement>(null);
   const [generatedCode, setGeneratedCode] = React.useState<string | undefined>(undefined);
   const { toast } = useToast(); // Initialize useToast
